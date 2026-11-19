@@ -38,10 +38,8 @@ The config is generated from the K2 one by `tools/k2pro/make_k2pro_cfg.py`
   guess (stock formula gives 301; the K2 measured about 5 mm under its stock
   value). Too low is safe: the tap fails instead of touching. Step 5
   measures it; the first `G28` with Z may fail its tap until then.
-- **Cutter ram distance** is the K2's `cutter_cut_x: -7.2`. Stock calibrated
-  -8.4 on the test printer (range -6.5 to -10). Check the cut in step 8.
-- **First-layer correction** keeps the K2 default 0.04 mm: Creality's K2 Pro
-  coefficients give the same 0.040 mm at 220 C (tap at 140 C).
+- **First-layer correction** follows Creality's K2 Pro curve (0.040 mm at
+  220 C, 0.083 at 250 C, tap at 140 C). Watch the first layer above 220 C.
 - Untested: everything. Positions come from the stock config, not from a
   run.
 

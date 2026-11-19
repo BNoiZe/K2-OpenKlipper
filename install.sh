@@ -11,7 +11,8 @@
 #                            touchscreen theme, Moonraker and slot data)
 #   sh install.sh --check    only check the printer, change nothing
 #
-# Environment: OKL_REF=<tag or branch> to install something other than the
+# Environment: OKL_REPO=<owner/repo> to install from a fork, OKL_REF=<tag or
+# branch> to install something other than the
 # latest release, OKL_FORCE=1 to install on a model other than the K2 / K2
 # Combo (F021), the K2 Plus (F008; docs/K2-PLUS-BETA.md is its first-run
 # guide) or the K2 Pro (F012, beta: docs/K2-PRO-BETA.md), at your own
@@ -20,7 +21,7 @@
 # (default: found automatically at each start).
 set -eu
 
-REPO=grant0013/K2-OpenKlipper
+REPO=${OKL_REPO:-grant0013/K2-OpenKlipper}
 REF=${OKL_REF:-}
 BUILD=/mnt/UDISK/k2-mainline-20260729-v62
 PDATA=/mnt/UDISK/printer_data_mainline

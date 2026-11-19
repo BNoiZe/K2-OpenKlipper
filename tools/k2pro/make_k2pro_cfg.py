@@ -220,6 +220,20 @@ clean_y: 329
      "# then set it in printer-overrides.cfg. Too high drives the bed into\n"
      "# the nozzle; too low only makes the tap fail.\n"
      "position_endstop: 296\n"),
+    # --- first layer: Creality's K2 Pro hot-nozzle correction ----------
+    ("first-layer correction: stock K2 Pro prtouch_v3 temp_non_linaer\n"
+     "a 1.75e-5, b -0.0019, c 0.08 on dt = print - tap temp (140):\n"
+     "c + a dt^2 + b dt = 0.040 at 220C, 0.083 at 250C. b dt is\n"
+     "-hot_z_rate x (T - hot_z_ref_temp) with ref = 140",
+     "variable_hot_z_comp: 0.04\n",
+     "# K2 Pro: Creality's own curve (c 0.08, a 1.75e-5, b -0.0019 on\n"
+     "# print - tap temp): 0.040 mm at 220 C, 0.083 at 250 C.\n"
+     "variable_hot_z_comp: 0.08\n"),
+    ("first-layer correction: linear term (b)",
+     "variable_hot_z_rate: 0\nvariable_hot_z_ref_temp: 220\n",
+     "variable_hot_z_rate: 0.0019\nvariable_hot_z_ref_temp: 140\n"),
+    ("first-layer correction: quadratic term (a)",
+     "variable_hot_z_quad: 0\n", "variable_hot_z_quad: 0.0000175\n"),
     # --- macros: coordinates -----------------------------------------
     ("PAUSE park: stock safe_pos 205,301", "        G1 X205 Y261 F12000\n",
      "        G1 X205 Y301 F12000\n"),
