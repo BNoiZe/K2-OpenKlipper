@@ -211,15 +211,15 @@ clean_y: 329
     ("cutter row: stock cut_pos_y 200",
      "cutter_x: 10\ncutter_y: 150\n", "cutter_x: 10\ncutter_y: 200\n"),
     # --- bottom Z switch ----------------------------------------------
-    ("bottom switch: PA15, zd_up 1 as the K2. position_endstop is a\n"
-     "deliberately LOW guess (stock: position_max - zmax_safe_pox_diff =\n"
-     "301; the K2 measured ~5 mm under its stock value). Too low only stops\n"
-     "the tap short and it fails safe. KZ_ALIGN_MEASURE CONFIRM=1 measures it",
+    ("bottom switch: PA15, zd_up 1 as the K2. Stock measured real_zmax\n"
+     "300.03 on the test K2 Pro (klippy.log, ZDOWN); kept 0.5 lower like the\n"
+     "K2 Plus. Too low only makes the tap fail; too high drives the bed into\n"
+     "the nozzle. KZ_ALIGN_MEASURE CONFIRM=1 measures it",
      "position_endstop: 263.12734375\n",
-     "# K2 Pro: a low guess until measured (KZ_ALIGN_MEASURE CONFIRM=1),\n"
-     "# then set it in printer-overrides.cfg. Too high drives the bed into\n"
-     "# the nozzle; too low only makes the tap fail.\n"
-     "position_endstop: 296\n"),
+     "# K2 Pro: stock measured 300.03 (real_zmax); kept a little low. Measure\n"
+     "# yours with KZ_ALIGN_MEASURE CONFIRM=1 and set it in\n"
+     "# printer-overrides.cfg. Too high drives the bed into the nozzle.\n"
+     "position_endstop: 299.5\n"),
     # --- first layer: Creality's K2 Pro hot-nozzle correction ----------
     ("first-layer correction: stock K2 Pro prtouch_v3 temp_non_linaer\n"
      "a 1.75e-5, b -0.0019, c 0.08 on dt = print - tap temp (140):\n"

@@ -34,10 +34,10 @@ The config is generated from the K2 one by `tools/k2pro/make_k2pro_cfg.py`
 
 ## Known gaps
 
-- **Bottom switch height** is `position_endstop: 296`, a deliberately low
-  guess (stock formula gives 301; the K2 measured about 5 mm under its stock
-  value). Too low is safe: the tap fails instead of touching. Step 5
-  measures it; the first `G28` with Z may fail its tap until then.
+- **Bottom switch height** is `position_endstop: 299.5`: Creality's own
+  bottom-switch run measured 300.03 (`real_zmax` in the stock klippy.log),
+  kept a little low like the K2 Plus (too low is safe: the tap fails instead
+  of touching). Step 5 measures it on your printer.
 - **First-layer correction** follows Creality's K2 Pro curve (0.040 mm at
   220 C, 0.083 at 250 C, tap at 140 C). Watch the first layer above 220 C.
 - Untested: everything. Positions come from the stock config, not from a
@@ -93,7 +93,7 @@ every stop. Nothing extrudes, wipes or cuts. Note any stop that is off.
 Put the suggested value in printer-overrides.cfg, save and restart:
 
     [k2_z_align]
-    position_endstop: 301.00
+    position_endstop: 300.00
 
 Then `G28` and `BED_MESH_CALIBRATE`.
 
