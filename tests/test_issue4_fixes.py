@@ -31,7 +31,7 @@ def macro(cfg, name):
 
 class CoolWipe(unittest.TestCase):
     def test_retract_needs_a_hot_nozzle(self):
-        for cfg in ("mainline_stage2.cfg", "mainline_stage2_k2plus.cfg"):
+        for cfg in ("mainline_stage2.cfg", "mainline_stage2_k2plus.cfg", "mainline_stage2_k2pro.cfg"):
             body = macro(cfg, "_COOL_WIPE")
             self.assertRegex(
                 body, r"if printer\.extruder\.can_extrude %\}\n\s+G1 E-3 ")
@@ -39,7 +39,7 @@ class CoolWipe(unittest.TestCase):
 
 class MeshAttempt(unittest.TestCase):
     def test_waits_after_the_mesh_and_the_check(self):
-        for cfg in ("mainline_stage2.cfg", "mainline_stage2_k2plus.cfg"):
+        for cfg in ("mainline_stage2.cfg", "mainline_stage2_k2plus.cfg", "mainline_stage2_k2pro.cfg"):
             body = macro(cfg, "_MESH_ATTEMPT")
             for cmd in ("BED_MESH_CALIBRATE", "BED_MESH_CHECK"):
                 self.assertRegex(
@@ -48,14 +48,14 @@ class MeshAttempt(unittest.TestCase):
 
 class NozzleScrub(unittest.TestCase):
     def test_stays_down_until_cool_then_lifts(self):
-        for cfg in ("mainline_stage2.cfg", "mainline_stage2_k2plus.cfg"):
+        for cfg in ("mainline_stage2.cfg", "mainline_stage2_k2plus.cfg", "mainline_stage2_k2pro.cfg"):
             body = macro(cfg, "_NOZZLE_CLEAR_SCRUB")
             self.assertRegex(
                 body, r"M400\n\s+M109 S\{cool\}\n\s+M106 S0\n[^\n]*\n"
                       r"\s+G1 Z5 F300\n")
 
     def test_print_start_scrubs_hot_and_presses_deeper(self):
-        for cfg in ("mainline_stage2.cfg", "mainline_stage2_k2plus.cfg"):
+        for cfg in ("mainline_stage2.cfg", "mainline_stage2_k2plus.cfg", "mainline_stage2_k2pro.cfg"):
             text = (ROOT / "config" / cfg).read_text()
             self.assertNotIn("NOZZLE_CLEAR HOT=140", text)
             self.assertIn("PRESS={params.PRESS|default(0.32)}", text)

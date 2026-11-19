@@ -412,7 +412,8 @@ class StartGcodeWaitTest(unittest.TestCase):
 
     def test_orca_profiles(self):
         for name in ('Creality K2 OpenKlipper.json',
-                     'Creality K2 Plus OpenKlipper.json'):
+                     'Creality K2 Plus OpenKlipper.json',
+                     'Creality K2 Pro OpenKlipper.json'):
             profile = json.loads((self.ROOT / 'orca' / name).read_text(
                 encoding='utf-8'))
             lines = profile['machine_start_gcode'].splitlines()

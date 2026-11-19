@@ -636,6 +636,12 @@ class MacroTest(unittest.TestCase):
                      'LOAD_FILAMENT', 'UNLOAD_FILAMENT', '_RUNOUT_REFILL'):
             self.assertEqual(plus[name], self.macros[name], name)
 
+    def test_k2_pro_config_has_the_same_macros(self):
+        pro = load_macros('mainline_stage2_k2pro.cfg')
+        for name in ('_HARK_TOOL', 'T0', 'T3', '_NO_CFS_TOOL', '_CFS_TC',
+                     'LOAD_FILAMENT', 'UNLOAD_FILAMENT', '_RUNOUT_REFILL'):
+            self.assertEqual(pro[name], self.macros[name], name)
+
 
 if __name__ == '__main__':
     unittest.main()

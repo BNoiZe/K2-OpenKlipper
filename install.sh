@@ -13,8 +13,9 @@
 #
 # Environment: OKL_REF=<tag or branch> to install something other than the
 # latest release, OKL_FORCE=1 to install on a model other than the K2 / K2
-# Combo (F021) or the K2 Plus (F008; docs/K2-PLUS-BETA.md is its first-run
-# guide), at your own risk, OKL_EXTRUDER=stock|dxc2 to answer the
+# Combo (F021), the K2 Plus (F008; docs/K2-PLUS-BETA.md is its first-run
+# guide) or the K2 Pro (F012, beta: docs/K2-PRO-BETA.md), at your own
+# risk, OKL_EXTRUDER=stock|dxc2 to answer the
 # extruder question in advance, OKL_CFS=yes|no to fix whether a CFS is used
 # (default: found automatically at each start).
 set -eu
@@ -118,8 +119,19 @@ case "$MODEL" in
         echo "    K2 Plus config (docs/K2-PLUS-BETA.md is the first-run guide)"
         STAGE_CFG=mainline_stage2_k2plus.cfg ;;
     F012)
-        [ "${OKL_FORCE:-0}" = 1 ] || die "model $MODEL is untested (developed on the F021 K2 / K2 Combo). OKL_FORCE=1 to try anyway"
-        echo "    WARNING: $MODEL is untested, continuing because OKL_FORCE=1" ;;
+        # K2 Pro: its own config (docs/K2-PRO-BETA.md), written from the
+        # stock config of board CR0CN200400C10, structure_version 0.
+        # BETA: still needs OKL_FORCE=1 until a supervised first run passes.
+        BOARD=$(get_sn_mac.sh board 2>/dev/null || true)
+        STRUCT=$(get_sn_mac.sh structure_version 2>/dev/null || true)
+        echo "    K2 Pro board: ${BOARD:-unknown}   structure_version: ${STRUCT:-unknown}"
+        [ "${OKL_FORCE:-0}" = 1 ] || die "the K2 Pro config is a beta (docs/K2-PRO-BETA.md). OKL_FORCE=1 to try it"
+        case "$BOARD:$STRUCT" in
+            CR0CN200400C10:0) ;;
+            *) echo "    WARNING: this K2 Pro layout ($BOARD, structure $STRUCT) is not the one the K2 Pro config was written for" ;;
+        esac
+        echo "    K2 Pro config (BETA, docs/K2-PRO-BETA.md is the first-run guide)"
+        STAGE_CFG=mainline_stage2_k2pro.cfg ;;
     *)  [ "${OKL_FORCE:-0}" = 1 ] || die "unknown model '$MODEL' (expected F021)" ;;
 esac
 case "$FW" in
