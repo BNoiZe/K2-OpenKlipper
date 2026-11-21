@@ -192,7 +192,9 @@ purge_x: 124
 purge_y: 329
 purge_return_x: 205
 """),
-    ("chute swing 138-149, brush 157-167 at Y329",
+    ("chute swing 138-149, brush 157-167 at Y327: stock brush middle\n"
+     "(clean_pos_middle_y 327); the 4 mm brush circles at the stock swing\n"
+     "Y329 would reach Y333, past position_max 332",
      """clean_plate_x: 155
 clean_left_x: 127
 clean_right_x: 137
@@ -206,7 +208,7 @@ clean_circle_left_x: 157
 clean_circle_right_x: 167
 clean_brush_left_x: 158
 clean_brush_right_x: 166
-clean_y: 329
+clean_y: 327
 """),
     ("cutter row: stock cut_pos_y 200",
      "cutter_x: 10\ncutter_y: 150\n", "cutter_x: 10\ncutter_y: 200\n"),
