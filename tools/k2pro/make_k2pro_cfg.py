@@ -37,6 +37,12 @@ HEADER = """\
 
 # (description, old, new). old must occur exactly once in the K2 config.
 CHANGES = [
+    # --- motors ---------------------------------------------------------
+    ("X/Y tracking-error time: K2 Pro motors ship 0.01 s, stock\n"
+     "motor_control writes 0.1 s at start; at 0.01 the cutter ram trips",
+     "init_motors: True\n",
+     "init_motors: True\n# K2 Pro: motors ship 0.01 s, stock writes 0.1 s (the cutter ram\n"
+     "# trips at 0.01, 22.11.)\ntrack_err_time: 0.1\n"),
     # --- motion limits ------------------------------------------------
     ("Z speed: stock K2 Pro max_z_velocity 10, max_z_accel 300",
      "max_z_velocity: 20  # stock K2\nmax_z_accel: 500  # stock K2\n",

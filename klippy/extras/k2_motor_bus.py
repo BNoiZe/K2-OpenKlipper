@@ -94,6 +94,12 @@
 #                              (00 08 11); 0 = only on MOTOR_TEMPS. Skipped
 #                              while the bus is busy or the CFS is working.
 #   #temp_warn: 100          - warn above this (firmware limit 115 C)
+#   #track_err_time: 0       - seconds of tracking error before X/Y trip
+#                              (param 0xbc), written to RAM at each wake
+#                              when the motor holds less. K2 Pro motors
+#                              ship 0.01 and stock writes 0.1 at start;
+#                              at 0.01 the cutter ram trips (22.11.).
+#                              0 = leave the motor's value
 #
 # Gcode:
 #   MOTOR_STALL_MODE DATA=<1|2>     - sent to both 0x81 and 0x82
@@ -162,6 +168,8 @@ class K2MotorBus:
         self._e_lock = self.reactor.mutex()
         self.init_motors = config.getboolean('init_motors', False)
         self.wake_delay = config.getfloat('wake_delay', 2.2, minval=0.)
+        self.track_err_time = config.getfloat('track_err_time', 0.,
+                                              minval=0., maxval=1.)
         self.bus_motors = self._parse_motors(config)
         self.stall_motors = tuple((name, addr) for name, addr
                                   in self.bus_motors if name in STALL_MOTORS)
@@ -576,14 +584,15 @@ class K2MotorBus:
             send(addr, payload)
         return True
 
+    def _read_param(self, addr, pid):
+        resp = self.xfer(addr, (0x00, 0x06, 0x02, pid))[1]
+        return struct.unpack('<f', resp[5:9])[0] if len(resp) >= 10 else None
+
     def _read_params(self, name, addr):
         values = []
         near_zero = {}
         for pid in PARAM_IDS:
-            resp = self.xfer(addr, (0x00, 0x06, 0x02, pid))[1]
-            value = None
-            if len(resp) >= 10:
-                value = struct.unpack('<f', resp[5:9])[0]
+            value = self._read_param(addr, pid)
             values.append("%02x=%s" % (pid, '?' if value is None
                                        else "%g" % value))
             if pid in proto.CALIBRATION_PARAM_IDS:
@@ -601,6 +610,22 @@ class K2MotorBus:
             logging.info("k2_motor_bus: motor %s param 19 at or below %.2f "
                          "with param 09 normal (K2 Plus motors read 0.15)",
                          name, proto.CALIBRATION_NEAR_ZERO)
+        # Stock motor_control writes its config's tracking-error time at
+        # start; without it K2 Pro motors trip after 10 ms against the
+        # cutter lever. RAM only: a power cycle restores the flash value.
+        if self.track_err_time:
+            track = self._read_param(addr, 0xbc)
+            if track is not None and track < self.track_err_time - 1e-6:
+                self.xfer(addr, (0x00, 0x06, 0x01, 0xbc)
+                          + tuple(struct.pack('<f', self.track_err_time)))
+                back = self._read_param(addr, 0xbc)
+                values.append("bc->%s" % ('?' if back is None
+                                          else "%g" % back))
+                if back is None or abs(back - self.track_err_time) > 1e-4:
+                    self.calibration_warnings.append(
+                        "motor %s (%02x) tracking-error time (param bc) "
+                        "stayed %s, wanted %g" % (
+                            name.upper(), addr, back, self.track_err_time))
         done = self.xfer(addr, END_PARAM_READ)[1]
         logging.info("k2_motor_bus: motor %s params %s, end %s", name,
                      " ".join(values), done.hex(' ') if done else '(none)')

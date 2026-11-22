@@ -94,9 +94,16 @@ opcode 06):
 | continuous overcurrent | 0xb4 / 0xb5 | 4 A for 1 s (clear time 0xe3 = 0.5 s) |
 | peak overcurrent | 0xb3 | 999 A (off) |
 | overspeed | 0xb6 / 0xb7 | 314 rad/s for 0.1 s |
-| tracking error | 0xbb / 0xbc | 0.3 rad for 0.01 s (K2 F021: 0.1 s) |
+| tracking error | 0xbb / 0xbc | 0.3 rad for 0.01 s (K2 F021: 0.1 s; K2 Pro F012 flash 0.01 s) |
 | minimum supply voltage | 0xbd | 20 V |
 | controller MCU temperature | 0xbe | 115 C |
+
+K2 Pro motors ship 0xbc = 0.01 s and stock `motor_control.cfg` writes 0.1 s
+at start. At 0.01 s the cutter ram trips the motor (excessive position
+tracking error) before the knife is through, and only a power cycle clears
+the stall latch afterwards (22.11.). `track_err_time: 0.1` in `[k2_motor_bus]`
+writes it to RAM at every wake when the motor holds less, and reads it back;
+the K2 Pro config sets it.
 
 `MOTOR_TEMPS` reads the controller MCU temperatures; `temp_poll_interval`
 polls them (off by default) and warns above `temp_warn` (100 C).
