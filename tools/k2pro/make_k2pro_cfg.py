@@ -321,7 +321,7 @@ CHANGES_ALL = [
      "G1 X150 Y150 F6000", 3),
 ]
 
-# K2 Pro only: the PTC chamber heater, belt tensioners and a slow position
+# K2 Pro only: the PTC chamber heater and a slow position
 # tour. The chamber heater block is the K2 Plus one (same pins in stock).
 EXTRA = """
 # K2 Pro PTC chamber heater, as stock (same pins as the K2 Plus): heater
@@ -361,12 +361,9 @@ tachometer_ppr: 2
 [hark_chamber]
 enable: True
 
-# K2 Pro automatic belt tensioners (stock [belt_mdl mdlx]/[belt_mdl mdly],
-# 140 N), as on the K2 Plus. BELT_TENSION_STATUS only reads them. Untested
-# on a K2 Pro.
-[k2_belt_tension]
-#target: 140
-#tolerance: 0.15
+# No [k2_belt_tension]: the K2 Pro has manual belt tensioners. Stock still
+# carries the K2 Plus [belt_mdl] sections, but nothing answers at 0x21
+# (live test 22.11.).
 
 # K2 Pro beta: visit the chute, brush, cutter and strip positions slowly
 # (20 mm/s, 3 s at each) and say where the nozzle is. Nothing extrudes, wipes

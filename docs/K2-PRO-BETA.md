@@ -25,7 +25,7 @@ addresses and the same fans.
 | Nozzle PID | tuned K2 | stock K2 Pro 26.861 / 3.035 / 59.429 |
 | Bed heater | half power, 110/220 V sets | full power, one PID (37 / 0.18 / 280), max 120 C |
 | Chamber heater | none | PTC on PC12, fan PB14/PB2, tach PC6 (as K2 Plus) |
-| Belt tensioners | none | `[belt_mdl]` modules (as K2 Plus) |
+| Belt tensioners | none | none, manual (stock config lists `[belt_mdl]`, but none are fitted) |
 | Mesh | 7x7 over 255 mm | 9x9 over 290 mm |
 | Chute, brush, cutter, strip | K2 positions | stock K2 Pro `box.cfg` / `prtouch_v3` positions |
 
@@ -107,17 +107,11 @@ Door shut, nothing printing:
 `fan tach` must be above 0 while it heats. `CHAMBER_HEAT TARGET=0` to stop.
 To turn it off: `[hark_chamber]` `enable: False` in printer-overrides.cfg.
 
-## Step 7: belt tension (read only)
-
-    BELT_TENSION_STATUS
-
-Send the output. Do not run `BELT_TENSION CONFIRM=1` before it is reviewed.
-
-## Step 8: CFS load, cut, unload
+## Step 7: CFS load, cut, unload
 
 One slot, PLA. Load, unload and a cut, watching the cutter and the chute.
 
-## Step 9: prints
+## Step 8: prints
 
 A small PLA print in the middle, then a large one (close to 300 mm), then a
 multi-slot print. In OrcaSlicer import `orca/Creality K2 Pro OpenKlipper.json`
