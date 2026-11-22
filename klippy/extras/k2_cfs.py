@@ -2363,7 +2363,12 @@ class K2CFS:
                        self.cutter_ram_speed * 60.,
                        self.cutter_release_x, self.cutter_y,
                        self.cutter_release_speed * 60.))
-                reactor.pause(reactor.monotonic() + .2)
+                # K2 Pro lever springs back slowly: give it up to 1 s before
+                # ramming again (it came back 0.2-1 s after the release)
+                deadline = reactor.monotonic() + 1.
+                while (self.cutter_switch_state is not True
+                       and reactor.monotonic() < deadline):
+                    reactor.pause(reactor.monotonic() + .05)
                 if self.cutter_switch_state is True:
                     break
                 logging.info("k2_cfs: knife not back after ram %d of %d",

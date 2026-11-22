@@ -16,11 +16,13 @@ class Obj:
 
 
 class Reactor:
+    now = 0.
+
     def monotonic(self):
-        return 0.
+        return self.now
 
     def pause(self, t):
-        pass
+        self.now = max(self.now, t)
 
 
 class Cmd:

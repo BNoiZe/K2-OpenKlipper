@@ -9,11 +9,13 @@ cfs_mod = importlib.import_module("extras.k2_cfs")
 
 
 class FakeReactor:
+    now = 0.
+
     def monotonic(self):
-        return 0.
+        return self.now
 
     def pause(self, until):
-        pass
+        self.now = max(self.now, until)
 
 
 class FakeCmd:
