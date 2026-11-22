@@ -78,6 +78,7 @@ def make_cfs(fail_at):
                  'purge_y', 'purge_gate_x', 'purge_x', 'cutter_x',
                  'cutter_y', 'cutter_cut_x', 'cutter_release_x'):
         setattr(cfs, name, 1.)
+    cfs.purge_door_x = None
     for name in ('cutter_speed', 'cutter_ram_speed', 'cutter_release_speed',
                  'cutter_ram_accel', 'cutter_retract_length',
                  'cutter_retract_speed', 'cutter_tip_length',
@@ -121,6 +122,19 @@ class UnloadWipeTest(unittest.TestCase):
         msg = self.run_unload(cfs)
         self.assertIn('still detects filament', msg)
 
+
+
+class ChuteDoorTest(unittest.TestCase):
+    # K2 Pro: X100 pushes the chute door open, the purge is back at X124
+    def test_door_opener_runs_between_gate_and_purge_spot(self):
+        cfs = cfs_mod.K2CFS.__new__(cfs_mod.K2CFS)
+        cfs.purge_gate_x, cfs.purge_x, cfs.purge_y = 138., 124., 329.
+        cfs.purge_door_x = 100.
+        xs = [m.split()[1] for m in cfs._chute_moves(600.)]
+        self.assertEqual(xs, ['X138.000', 'X100.000', 'X124.000'])
+        cfs.purge_door_x = None
+        xs = [m.split()[1] for m in cfs._chute_moves(600.)]
+        self.assertEqual(xs, ['X138.000', 'X124.000'])
 
 if __name__ == '__main__':
     unittest.main()

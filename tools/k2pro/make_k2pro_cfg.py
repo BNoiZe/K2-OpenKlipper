@@ -178,9 +178,9 @@ probe_count: 9, 9
      "probe_points: 130, 130, 130\n", "probe_points: 150, 150, 150\n"),
     # --- chute, brush, cutter (stock K2 Pro box.cfg) --------------------
     ("CFS purge path: safe_pos 205,301; gate at the chute's left swing\n"
-     "limit (clean_left_pos_x 138), as the K2; purge at X100, not stock\n"
-     "extrude_pos 124: 124 leaves the chute door shut (live test 22.11.),\n"
-     "100 opens it, matching stock box's G0 X100 move",
+     "limit (clean_left_pos_x 138), as the K2; then, as stock box, X100\n"
+     "to push the chute door open (live test 22.11.: 124 leaves it shut)\n"
+     "and back to extrude_pos 124 over the chute to purge",
      """purge_safe_y: 261
 purge_entry_x: 131
 purge_gate_x: 127
@@ -190,7 +190,8 @@ purge_return_x: 205
 """, """purge_safe_y: 301
 purge_entry_x: 142
 purge_gate_x: 138
-purge_x: 100
+purge_door_x: 100
+purge_x: 124
 purge_y: 329
 purge_return_x: 205
 """),
@@ -386,6 +387,7 @@ gcode:
         ("safe park (purge_return_x, purge_safe_y)", c.purge_return_x, c.purge_safe_y),
         ("chute approach (purge_entry_x, purge_safe_y)", c.purge_entry_x, c.purge_safe_y),
         ("chute gate (purge_gate_x, purge_y)", c.purge_gate_x, c.purge_y),
+        ("chute door opener (purge_door_x, purge_y)", c.purge_door_x, c.purge_y),
         ("purge spot over the chute (purge_x, purge_y)", c.purge_x, c.purge_y),
         ("chute swing right (clean_right_x, clean_y)", c.clean_right_x, c.clean_y),
         ("brush left (clean_circle_left_x, clean_y)", c.clean_circle_left_x, c.clean_y),

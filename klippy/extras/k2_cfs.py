@@ -318,6 +318,9 @@ class K2CFS:
         self.purge_entry_x = config.getfloat('purge_entry_x', 131.)
         self.purge_gate_x = config.getfloat('purge_gate_x', 127.)
         self.purge_x = config.getfloat('purge_x', 115.)
+        # K2 Pro: the head opens the chute door further left than it
+        # purges (stock box: G0 X100, then extrude_pos 124). Unset: none.
+        self.purge_door_x = config.getfloat('purge_door_x', None)
         self.purge_y = config.getfloat('purge_y', 291.5)
         self.purge_return_x = config.getfloat('purge_return_x', 205.)
         self.purge_position_tolerance = config.getfloat(
@@ -1556,6 +1559,16 @@ class K2CFS:
                 % (self.purge_min_z, position[2]))
         return position
 
+    def _chute_moves(self, rate):
+        # From the chute line (purge_y) through the gate, the door opener
+        # if this printer has one, to the purge spot
+        moves = [self.purge_gate_x]
+        if self.purge_door_x is not None:
+            moves.append(self.purge_door_x)
+        moves.append(self.purge_x)
+        return tuple("G1 X%.3f Y%.3f F%.3f" % (x, self.purge_y, rate)
+                     for x in moves)
+
     def cmd_CFS_PURGE_POSITION(self, gcmd):
         self._require_safe_motion(gcmd, "CFS_PURGE_POSITION")
         feedrate = self.purge_speed * 60.
@@ -1564,12 +1577,7 @@ class K2CFS:
             "G1 Y%.3f F%.3f" % (self.purge_safe_y, feedrate),
             "G1 X%.3f F%.3f" % (self.purge_entry_x, feedrate),
             "G1 Y%.3f F%.3f" % (self.purge_y, feedrate),
-            "G1 X%.3f Y%.3f F%.3f"
-            % (self.purge_gate_x, self.purge_y, feedrate),
-            "G1 X%.3f Y%.3f F%.3f"
-            % (self.purge_x, self.purge_y, feedrate),
-            "M400",
-        ))
+        ) + self._chute_moves(feedrate) + ("M400",))
         self.gcode.run_script_from_command(script)
         gcmd.respond_info(
             "CFS purge position reached: X%.3f Y%.3f"
@@ -1617,12 +1625,7 @@ class K2CFS:
             "G1 Y%.3f F%.3f" % (self.purge_safe_y, travel_rate),
             "G1 X%.3f F%.3f" % (self.purge_entry_x, travel_rate),
             "G1 Y%.3f F%.3f" % (self.purge_y, travel_rate),
-            "G1 X%.3f Y%.3f F%.3f"
-            % (self.purge_gate_x, self.purge_y, travel_rate),
-            "G1 X%.3f Y%.3f F%.3f"
-            % (self.purge_x, self.purge_y, travel_rate),
-            "M400",
-        ))
+        ) + self._chute_moves(travel_rate) + ("M400",))
         # Already at the chute (the last wipe ended there): wipe in place
         # rather than driving out to the safe line and back in.
         tol = self.purge_position_tolerance
@@ -2245,8 +2248,9 @@ class K2CFS:
             "G1 Y%.3f F%.3f" % (self.purge_safe_y, rate),
             "G1 X%.3f F%.3f" % (self.purge_entry_x, rate),
             "G1 Y%.3f F%.3f" % (self.purge_y, rate),
-            "G1 X%.3f Y%.3f F%.3f" % (self.purge_gate_x, self.purge_y, rate),
-            "G1 X%.3f Y%.3f F%.3f" % (self.purge_x, self.purge_y, rate),
+        ])
+        lines.extend(self._chute_moves(rate))
+        lines.extend([
             "G1 Z%.3f F600" % self._gcode_z(position[2]),
             "M400",
         ])
@@ -2384,14 +2388,10 @@ class K2CFS:
                 "G1 Y%.3f F%.3f\n"
                 "G1 X%.3f F%.3f\n"
                 "G1 Y%.3f F%.3f\n"
-                "G1 X%.3f Y%.3f F%.3f\n"
-                "G1 X%.3f Y%.3f F%.3f\n"
-                "M400"
                 % (self.purge_safe_y, travel_rate,
                    self.purge_entry_x, travel_rate,
-                   self.purge_y, travel_rate,
-                   self.purge_gate_x, self.purge_y, travel_rate,
-                   self.purge_x, self.purge_y, travel_rate))
+                   self.purge_y, travel_rate)
+                + "\n".join(self._chute_moves(travel_rate)) + "\nM400")
             if not cut_completed:
                 raise RuntimeError(
                     "internal safety gate: rewind requested before cut")
