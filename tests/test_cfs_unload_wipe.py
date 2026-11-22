@@ -128,6 +128,21 @@ class UnloadWipeTest(unittest.TestCase):
                    if sc.startswith('SET_VELOCITY_LIMIT') and 'G1 X' in sc]
             self.assertEqual(len(ram), want, (stuck, rams))
 
+    def test_first_ram_runs_on_from_the_approach_without_a_stop(self):
+        # Stock: run to cutter_x and ram in one queue, no M400 between
+        cfs = make_cfs('after_cut')
+        cfs.cutter_x = 10.
+        try:
+            cfs.cmd_CFS_CUT_UNLOAD(Cmd({'SLOT': 'C', 'CONFIRM': '1'}))
+        except Exception:
+            pass
+        ram = [sc for sc in cfs.gcode.scripts
+               if sc.startswith('SET_VELOCITY_LIMIT') and 'G1 X' in sc][0]
+        approach, rest = ram.split('G1 X10.000', 1)
+        self.assertNotIn('M400', approach + rest.split('\n', 1)[0])
+        self.assertEqual(ram.count('M400'), 1)
+        self.assertTrue(ram.rstrip().endswith('M400'))
+
     def test_failure_before_the_cut_does_not_wipe(self):
         cfs = make_cfs('staging')
         self.run_unload(cfs)

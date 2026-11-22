@@ -2334,19 +2334,25 @@ class K2CFS:
             travel_rate = self.cutter_speed * 60.
             self.gcode.run_script_from_command(
                 "G90\n"
-                "G1 Y%.3f F%.3f\n"
-                "G1 X%.3f F%.3f\n"
-                "M400"
-                % (self.cutter_y, travel_rate,
-                   self.cutter_x, travel_rate))
+                "G1 Y%.3f F%.3f"
+                % (self.cutter_y, travel_rate))
             if self.cutter_switch_state is not True:
                 raise RuntimeError(
-                    "cutter did not report returned at staging point")
+                    "cutter did not report returned before the cut")
             accel_changed = True
             self.cutter_events = []
             reactor = self.printer.get_reactor()
+            # Stock cut_material queues the run to cutter_x (accel 5000,
+            # cutter_speed) and the ram with no M400 between: the head runs
+            # through cutter_x in -X and hits the lever at speed. Stopping
+            # at cutter_x first left too little momentum to part the
+            # filament (K2 Pro, 22.11.). Later rams start from the release.
+            approach = ("SET_VELOCITY_LIMIT ACCEL=5000\n"
+                        "G1 X%.3f Y%.3f F%.3f\n"
+                        % (self.cutter_x, self.cutter_y, travel_rate))
             for attempt in range(self.cutter_rams):
                 self.gcode.run_script_from_command(
+                    (approach if attempt == 0 else "") +
                     "SET_VELOCITY_LIMIT ACCEL=%.3f\n"
                     "G90\n"
                     "G1 X%.3f Y%.3f F%.3f\n"
