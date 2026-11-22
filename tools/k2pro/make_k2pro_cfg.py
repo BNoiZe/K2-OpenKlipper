@@ -43,6 +43,10 @@ CHANGES = [
      "init_motors: True\n",
      "init_motors: True\n# K2 Pro: motors ship 0.01 s, stock writes 0.1 s (the cutter ram\n"
      "# trips at 0.01, 22.11.)\ntrack_err_time: 0.1\n"),
+    ("cutter: two rams per cut; one only nicks the filament on the K2 Pro\n"
+     "and the knife sticks in it, the second parts it (22.11.)",
+     "cutter_ram_accel: 5000\n",
+     "cutter_ram_accel: 5000\ncutter_rams: 2\n"),
     # --- motion limits ------------------------------------------------
     ("Z speed: stock K2 Pro max_z_velocity 10, max_z_accel 300",
      "max_z_velocity: 20  # stock K2\nmax_z_accel: 500  # stock K2\n",

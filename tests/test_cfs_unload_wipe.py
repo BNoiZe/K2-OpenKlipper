@@ -79,6 +79,7 @@ def make_cfs(fail_at):
                  'cutter_y', 'cutter_cut_x', 'cutter_release_x'):
         setattr(cfs, name, 1.)
     cfs.purge_door_x = None
+    cfs.cutter_rams = 1
     for name in ('cutter_speed', 'cutter_ram_speed', 'cutter_release_speed',
                  'cutter_ram_accel', 'cutter_retract_length',
                  'cutter_retract_speed', 'cutter_tip_length',
@@ -104,6 +105,17 @@ class UnloadWipeTest(unittest.TestCase):
         msg = self.run_unload(cfs)
         self.assertIn('still detects filament', msg)
         self.assertIn('NOZZLE_WIPE CONFIRM=1 PARK=0', cfs.gcode.scripts)
+
+    def test_cutter_rams_repeats_ram_and_release(self):
+        # K2 Pro: one ram only nicks the filament, the second parts it
+        for rams in (1, 2):
+            cfs = make_cfs('after_cut')
+            cfs.cutter_rams = rams
+            self.run_unload(cfs)
+            ram = [sc for sc in cfs.gcode.scripts
+                   if sc.startswith('SET_VELOCITY_LIMIT') and 'G1 X' in sc]
+            self.assertEqual(len(ram), 1)
+            self.assertEqual(ram[0].count('G1 X'), 2 * rams)
 
     def test_failure_before_the_cut_does_not_wipe(self):
         cfs = make_cfs('staging')
