@@ -59,7 +59,7 @@ OBJECTS = {
     "gcode_move": ["gcode_position", "homing_origin"],
     "gcode_macro START_PRINT": ["z_offset"],
     "k2_cfs": ["fitted", "online", "active_slot", "feed_slot", "running_out",
-               "runout_next",
+               "runout_next", "remain",
                "temperature", "humidity", "slot_stats", "change_pending"],
     "hark_cfs_slots": ["slots", "tool_map_set", "tool_map_file",
                        "map_tools", "map_targets"],
@@ -2691,6 +2691,9 @@ class Screen:
                     rec.get("type", ""), rec.get("nozzle_temp", "?")), "xs",
                     "muted", width=tw)
                 extras = []
+                left = (cfs.get("remain") or [None] * 4)[i]
+                if left is not None:
+                    extras.append("%d%%" % left)
                 if rec.get("pressure_advance"):
                     extras.append("PA %.3f" % rec["pressure_advance"])
                 if rec.get("retract_length"):

@@ -547,6 +547,9 @@ class K2CFS:
         self.clog_wheel_reset_length = config.getfloat(
             'clog_wheel_reset_length', 18., above=0.)
         self.clog_baseline = None
+        # RFID remaining % per slot (status 'remain'): read at the first
+        # idle poll and again after a slot event (insert, remove, RFID read)
+        self.remain_stale = True
         self.load_engage_length = config.getfloat(
             'load_engage_length', 5., above=0., maxval=5.)
         self.load_engage_speed = config.getfloat(
@@ -860,6 +863,8 @@ class K2CFS:
                         'active_slots', 'active_slot', 'selection_setting'):
                 if key in m:
                     self.status[key] = m[key]
+            if self.remain_stale and not self._printing():
+                self._read_remain()
         else:
             self.env_poll_failures += 1
             if self.env_poll_failures >= 3:
@@ -1104,6 +1109,7 @@ class K2CFS:
                                  for s, e in sorted(events.items()))
                 self.status['last_slot_event'] = text
                 logging.info("k2_cfs: slot event: %s", text)
+                self.remain_stale = True
         else:
             logging.info("k2_cfs: slot events did not drain after %d reads",
                          self.STATE_EVENT_DRAIN)
@@ -1194,6 +1200,20 @@ class K2CFS:
         vals = list(p[2:2 + self.NUM_SLOTS])
         return {'remain': vals}
 
+    @staticmethod
+    def known_remain(vals):
+        # Remaining % per slot, None where unknown. A spool without a
+        # Creality RFID tag reads 0 (stock shows remain_len 0 for those)
+        # and >100 is no reading.
+        # ponytail: a tagged spool that is really at 0% also shows unknown
+        return [v if 0 < v <= 100 else None for v in vals]
+
+    def _read_remain(self):
+        r = self._run_query('REMAIN_LEN')
+        if 'remain' in r:
+            self.status['remain'] = self.known_remain(r['remain'])
+            self.remain_stale = False
+
     def _dec_raw(self, p):
         return {'raw': p.hex(' ')}
 
@@ -1239,7 +1259,7 @@ class K2CFS:
             st['slots_loaded'] = f['slots_loaded']
         rl = results.get('REMAIN_LEN', {})
         if 'remain' in rl:
-            st['remain'] = rl['remain']
+            st['remain'] = self.known_remain(rl['remain'])
         b = results.get('BUFFER_STATE', {})
         if 'buffer_state' in b:
             st['buffer_state'], st['buffer'] = b['buffer_state'], b['buffer']
