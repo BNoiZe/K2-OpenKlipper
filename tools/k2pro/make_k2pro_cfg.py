@@ -177,8 +177,10 @@ probe_count: 9, 9
     ("resonance test at the bed centre (stock 150,150,150)",
      "probe_points: 130, 130, 130\n", "probe_points: 150, 150, 150\n"),
     # --- chute, brush, cutter (stock K2 Pro box.cfg) --------------------
-    ("CFS purge path: safe_pos 205,301; extrude_pos 124,329; gate at the\n"
-     "chute's left swing limit (clean_left_pos_x 138), as the K2",
+    ("CFS purge path: safe_pos 205,301; gate at the chute's left swing\n"
+     "limit (clean_left_pos_x 138), as the K2; purge at X100, not stock\n"
+     "extrude_pos 124: 124 leaves the chute door shut (live test 22.11.),\n"
+     "100 opens it, matching stock box's G0 X100 move",
      """purge_safe_y: 261
 purge_entry_x: 131
 purge_gate_x: 127
@@ -188,7 +190,7 @@ purge_return_x: 205
 """, """purge_safe_y: 301
 purge_entry_x: 142
 purge_gate_x: 138
-purge_x: 124
+purge_x: 100
 purge_y: 329
 purge_return_x: 205
 """),
