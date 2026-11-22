@@ -422,9 +422,9 @@ class K2CFS:
             'cutter_release_speed', 150., above=0., maxval=150.)
         self.cutter_ram_accel = config.getfloat(
             'cutter_ram_accel', 3000., above=0., maxval=5000.)
-        # Ram/release cycles per cut. K2 Pro: one ram only nicks the
-        # filament and the knife sticks in it; a second ram parts it
-        # (22.11.). Stock box loops its cut too (cut_cycle_index).
+        # Rams per cut, as stock box's cut_material: ram and release once,
+        # and only while the knife has not come back ram again, up to this
+        # many times in all.
         self.cutter_rams = config.getint('cutter_rams', 1, minval=1,
                                          maxval=3)
         self.cutter_retract_length = config.getfloat(
@@ -2344,16 +2344,24 @@ class K2CFS:
                     "cutter did not report returned at staging point")
             accel_changed = True
             self.cutter_events = []
-            ram = ("G1 X%.3f Y%.3f F%.3f\nG1 X%.3f Y%.3f F%.3f\n"
-                   % (self.cutter_cut_x, self.cutter_y,
-                      self.cutter_ram_speed * 60.,
-                      self.cutter_release_x, self.cutter_y,
-                      self.cutter_release_speed * 60.))
-            self.gcode.run_script_from_command(
-                "SET_VELOCITY_LIMIT ACCEL=%.3f\nG90\n%sM400"
-                % (self.cutter_ram_accel, ram * self.cutter_rams))
             reactor = self.printer.get_reactor()
-            reactor.pause(reactor.monotonic() + .2)
+            for attempt in range(self.cutter_rams):
+                self.gcode.run_script_from_command(
+                    "SET_VELOCITY_LIMIT ACCEL=%.3f\n"
+                    "G90\n"
+                    "G1 X%.3f Y%.3f F%.3f\n"
+                    "G1 X%.3f Y%.3f F%.3f\n"
+                    "M400"
+                    % (self.cutter_ram_accel,
+                       self.cutter_cut_x, self.cutter_y,
+                       self.cutter_ram_speed * 60.,
+                       self.cutter_release_x, self.cutter_y,
+                       self.cutter_release_speed * 60.))
+                reactor.pause(reactor.monotonic() + .2)
+                if self.cutter_switch_state is True:
+                    break
+                logging.info("k2_cfs: knife not back after ram %d of %d",
+                             attempt + 1, self.cutter_rams)
             pressed = any(not st for t, st in self.cutter_events)
             self.cutter_events = None
             self.status['last_cut_sensor_pressed'] = pressed

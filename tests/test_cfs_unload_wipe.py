@@ -106,16 +106,27 @@ class UnloadWipeTest(unittest.TestCase):
         self.assertIn('still detects filament', msg)
         self.assertIn('NOZZLE_WIPE CONFIRM=1 PARK=0', cfs.gcode.scripts)
 
-    def test_cutter_rams_repeats_ram_and_release(self):
-        # K2 Pro: one ram only nicks the filament, the second parts it
-        for rams in (1, 2):
+    def test_cutter_rams_rams_again_only_while_the_knife_is_stuck(self):
+        # As stock cut_material: one ram; again only if the knife is not back
+        for stuck, rams, want in ((0, 3, 1), (1, 3, 2), (5, 3, 3)):
             cfs = make_cfs('after_cut')
             cfs.cutter_rams = rams
-            self.run_unload(cfs)
+            run = cfs.gcode.run_script_from_command
+            left = [stuck]
+
+            def gcode(script, run=run, cfs=cfs, left=left):
+                run(script)
+                if script.startswith('SET_VELOCITY_LIMIT') and 'G1 X' in script:
+                    cfs.cutter_switch_state = left[0] <= 0
+                    left[0] -= 1
+            cfs.gcode.run_script_from_command = gcode
+            try:
+                cfs.cmd_CFS_CUT_UNLOAD(Cmd({'SLOT': 'C', 'CONFIRM': '1'}))
+            except Exception:
+                pass
             ram = [sc for sc in cfs.gcode.scripts
                    if sc.startswith('SET_VELOCITY_LIMIT') and 'G1 X' in sc]
-            self.assertEqual(len(ram), 1)
-            self.assertEqual(ram[0].count('G1 X'), 2 * rams)
+            self.assertEqual(len(ram), want, (stuck, rams))
 
     def test_failure_before_the_cut_does_not_wipe(self):
         cfs = make_cfs('staging')
